@@ -1,0 +1,3 @@
+[submodule "Part 2/static/jquery.fileDownload"]
+	path = Part 2/static/jquery.fileDownload
+	url = https://github.com/johnculviner/jquery.fileDownload.git

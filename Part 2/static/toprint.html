@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="jquery.fileDownload/src/Scripts/jquery.fileDownload.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("#foo").css("color","red"); // This should run and alter the page before PhantomJS prints it. If the
+            // printed text is red, we'll know that the headless rendering worked.
+            $("button").click(function(){
+                var todownload = $('#inp').val() || window.location.href; // We support printing other, arbitrary URIs
+                // from the internet, but I haven't tested it much it yet. Defaults to "print myself".
+                $.fileDownload('http://localhost:8081/foo?toconvert=' +  todownload);
+            });
+        });
+    </script>
+    <title>Page to be printed</title>
+</head>
+<body>
+    <input type="text" id="inp"/>
+    <button>Get PDF</button>
+    <div id="foo">Some text...</div>
+    <img src="wtf.png"/>
+</body>
+</html>
