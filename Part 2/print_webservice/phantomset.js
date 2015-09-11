@@ -5,10 +5,10 @@ var when = require("when");
 var phridge = require("phridge");
 
 function PhantomSet(maxPhantoms) {
-    this.ready = new Array;
-    this.active = new Array;
-    this.building = 0;
-    this.maxPhantoms = maxPhantoms;
+    this.ready = new Array; // Instances that aren't being used.
+    this.active = new Array; // Instances that are being used.
+    this.building = 0; // Instances that are being spun up (since creation is asynchronous, this has to be tracked).
+    this.maxPhantoms = maxPhantoms; // Total number of instances allowed, regardless of status.
 }
 
 PhantomSet.prototype.getPhantom = function() {
@@ -26,6 +26,7 @@ PhantomSet.prototype.getPhantom = function() {
                 resolve(phantom);
             });
         } else {
+        	self.logStatus("Failed to get an instance");
             reject(new Error("No phantoms available to service request!"));
         }
     });

@@ -1,5 +1,5 @@
 ## TL;DR
-It's a PhantomJS/NodeJS webservice for converting PDFs, which can be scaled independently of other infrastructure components, caches static content in memory in persistent headless browser processes, and parallelizes its own conversion pipelines. Go to the "Installation" or "Usage" sections to get started.
+This is a writeup and presentation about using NodeJS for writing webservices. A practical example is included: it's a PhantomJS/NodeJS webservice for converting PDFs, which can be scaled independently of other infrastructure components, caches static content in memory in persistent headless browser processes, and parallelizes its own conversion pipelines. See `PDF Printer/README.md` to get started.
 
 ## History/Architecture Summary
 
@@ -19,7 +19,7 @@ The existing print-to-PDF functionality is great, and very cleverly implemented,
 Step 3 is done in order to prevent every page-print request from fetching the entirety of the page's static assets (e.g. sprite files) from scratch. Were this to occur each time a page was converted, it would increase the disk and network load of every PDF conversion substantially, and would also potentially increase the runtime of the conversion to an unacceptable duration.
 
 #### Drawbacks of the Current Situation
-The existing functionality has a few drawbacks**\***:
+The existing functionality has a few drawbacks**\* **:
 
 - **It's very complex.** The static-content-cache-defeating logic is robust to a point, but it's still fundamentally a highly involved regex parse of arbitrary HTML.
 - **It's synchronous.** All content fetches are performed one after the other in the substitution loop. PhantomJS performs the local read operations on the rewritten `file://` URIs in parallel, but the acquiry/priming of the cache is done sequentially owing to the single-threaded nature of our webserver processes.
@@ -49,7 +49,7 @@ Ideally, a lightweight webservice could be started on a set of PDF conversion se
 
 #### Proposed Alterations
 
-It turns out that a lot of those requirements can be fulfilled by making one simple architectural change: use PhantomJS exclusively for all conversion work, and use a persistent phantom subprocess. The persistent subprocess can render pages into PDFs as fast as the headless browser can render pages, and the entire browser stack doesn't have to be restarted for every conversion attempt; IPC can be used to hand a running Phantom engine new conversion requests. Wkhtmltopdf can be abandoned in favor of Phantom's native PDF conversion functionality. Furthermore, this solves the caching issue, since the in-memory static asset cache of PhantomJS will share assets between different pages to be rendered, and only invalidate/discard cache contents when they expire (e.g. due to a `Cache-Control` header) or when PhantomJS shuts down. PhantomJS has bugs with caching on disk, so it couldn't previously be trusted to persist static content resources onto disk where Wkhtmltopdf could find them. Now, however, there's no cache handoff necessary, so in-memory caching can be used.
+It turns out that a lot of those requirements can be fulfilled by making one simple architectural change: use PhantomJS exclusively for all conversion work, and use a persistent phantom subprocess. The persistent subprocess can render pages into PDFs as fast as the headless browser can render pages, and the entire browser stack doesn't have to be restarted for every conversion attempt; IPC can be used to hand a running Phantom engine new conversion requests. Wkhtmltopdf can be abandoned in favor of Phantom's native PDF conversion functionality. Furthermore, this solves the caching issue, since the in-memory static asset cache of PhantomJS will share assets between different pages to be rendered, and only invalidate/discard cache contents when they expire (e.g. due to a [`Cache-Control`](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching?hl=en#cache-control) headedr) or when PhantomJS shuts down. PhantomJS has bugs with caching on disk, so it couldn't previously be trusted to persist static content resources onto disk where Wkhtmltopdf could find them. Now, however, there's no cache handoff necessary, so in-memory caching can be used.
 
 Parallelism/simplicity can be solved by using NodeJS for the conversion API service. Node is well-suited for this kind of task, but in this particular application it's just a time-saver tool; any language/platform that could asynchronously communicate with subprocesses and run a light HTTP server capable of handling multiple requests in parallel would work for this purpose as well. NodeJS also has plenty of robust libraries for communicating with persistent PhantomJS background processes.
 
@@ -68,9 +68,9 @@ This has been implemented here in a toy/proof of concept way. See the `phantomse
 ## Usage
 **Disclaimer:** My JavaScript sucks. This project is probably littered with obvious gotchas that someone who touches JS more than once in a blue moon would easily catch/fix. Feel free to fix them.
 
-1. Start a static file webserver for the test page. In the directory where this README lives, `cd` into the `static` directory and do `python -m SimpleHTTPServer 8080` or whatever port you'd like to serve the page on (port 8081 is hardcoded for other parts of this demo, but the static service port is up to you).
-2. In another terminal/session, in the directory where this README lives, `cd` into the `print_webservice` directory and do `node print_webservice.js`. It should start listening on port 8081, and not output any errors.
-	- For folks on Python 3, do `python -m http.server 8080`.
+1. Start a static file webserver for the test page. `cd` into `Part 2/static` and do `python -m SimpleHTTPServer 8080` or whatever port you'd like to serve the page on (port 8081 is hardcoded for other parts of this demo, but the static service port is up to you).
+ 	- For folks on Python 3, do `python -m http.server 8080`.
+2. Start the page-printing service. In another terminal/session, `cd` into `Part 2/print_webservice` directory and do `node print_webservice.js`. It should start listening on port 8081, and not output any errors.
 3. In a browser, go to `http://localhost:8080` or whatever port you ran the Python static file server on. You should see a page with a "Get PDF" button, an image, and some red text.
 4. Click the "Get PDF" button. You should be handed a (ugly, badly formatted) PDF of the page in question.
 
@@ -78,7 +78,7 @@ This has been implemented here in a toy/proof of concept way. See the `phantomse
 To see the multiprocess creation-rate limiting in action, hammer in sequence (or send requests using JS) on the "Get PDF" button. The print_webservice logs will eventually show "no phantoms are available to service your request" errors when the captive-process-pool-limit (3, by default, but you can change it in code) is hit.
 
 #### Static Content Caching
-For bonus fun, watch the static files getting received in the Python static asset server's log. The `SimpleHTTPServer` code sets `Cache-Control` by default, so static assets should only be served once per client process (once for loading the page in your browser, and once when each Phantom hits the page for the first time). The rest of the time, the HTML is all that should be retrieved. Refreshing the page forces a re-fetch (in Chrome, at least).
+For bonus fun, watch the static files getting received inn the Python static asset server's log. The `SimpleHTTPServer` code sets `Cache-Control` by default (I think; it might use [etags](https://en.wikipedia.org/wiki/HTTP_ETag) instead), so static assets should only be served once per client process (once for loading the page in your browser, and once when each Phantom hits the page for the first time). The rest of the time, the HTML is all that should be retrieved. Refreshing the page forces a re-fetch (in Chrome, at least).
 
 #### Printing Other Pages
 For even more bonus fun, try putting URLs of other sites into the text box. For some reason, Google won't print (it causes an internal error that probably translates into "You don't know good JS lol silly backend coder"), but some other URLs (like [this one](http://www.linuxjournal.com/content/tech-tip-really-simple-http-server-python)) seem to work fine.
@@ -95,5 +95,5 @@ A lot of this is a toy/unfinished. Stuff that could be tuned up if this were to 
 ## Other Files
 There are some other files in the `unused_files` directory:
 
-- `first_attempt.js` is the static server I wrote for class. It had a lot of bugs, and didn't do multiple-captive-phantom maintenance. Most of its bugs arise from the fact that `phantom-proxy`, the package I was using to communicate with Phantom via IPC, is broken/abandonware/sucky. [Phridge](https://github.com/peerigon/phridge), while far from perfect, seems to work better (and it comes with a bundled version of Phantom, which saves installation hassle). The server *acts* like it works, but much of the time it's just returning the initial `page.pdf` conversion result file it generated during the first request (Phantom then crashes on all subsequent requests, for arcane/unclear reasons).
+- `first_attempt.js` is the static server I wrote for class. It had a lot of bugs, and didn't do multiple-captive-phantom maintenance. Most of its bugs arise from the fact that `phantom-proxy`, the package I was using to communicate with Phantom via IPC, is broken/abandonware/sucky. [Phridge](https://github.com/peerigon/phridge), while far from perfect, seems to work better (and it comes with a bundled version of Phantom, which saves installation hassle). The server *acts* like it works, but much of the time it's just returning the initial `page.pdf` conversion resultslt file it generated during the first request (Phantom then crashes on all subsequent requests, for arcane/unclear reasons).
 - `static_server.js` is a result of me not doing my research and realizing that Python's `SimpleHTTPServer` actually *does* do static content cache control/etags/whatever. The NodeJS version is a very stupid, error-ignoring static file server that explicitly sets `Cache-Control` headers in Node. It was only used for initial testing of static content cache invalidation.
