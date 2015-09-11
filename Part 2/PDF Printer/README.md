@@ -1,3 +1,17 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+## Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+    - [Overview/Quick Start](#overviewquick-start)
+    - [Multiple Captive Processes](#multiple-captive-processes)
+    - [Static Content Caching](#static-content-caching)
+    - [Printing Other Pages](#printing-other-pages)
+- [TODOs](#todos)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Installation
 
 1. Install NodeJS.
@@ -5,6 +19,8 @@
 
 ## Usage
 **Disclaimer:** My JavaScript sucks. This project is probably littered with obvious gotchas that someone who touches JS more than once in a blue moon would easily catch/fix. Feel free to fix them.
+
+#### Overview/Quick Start
 
 1. Start a static file webserver for the test page. `cd` into `Part 2/static` and do `python -m SimpleHTTPServer 8080` or whatever port you'd like to serve the page on (port 8081 is hardcoded for other parts of this demo, but the static service port is up to you).
  	- For folks on Python 3, do `python -m http.server 8080`.
