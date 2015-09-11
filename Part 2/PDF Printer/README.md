@@ -15,16 +15,16 @@
 ## Installation
 
 1. Install NodeJS.
-2. In the directory where this README lives, `cd` into the `print_webservice` directory and do `npm install`. That will install all dependencies (and PhantomJS) locally into the project directory. There will be warnings/extra output; it should be ignoreable unless it looks like an error.
+2. In the directory where this README lives, do `npm install`. That will install all dependencies (and PhantomJS) locally into the project directory. There will be warnings/extra output; it should be ignoreable unless it looks like an error.
 
 ## Usage
 **Disclaimer:** My JavaScript sucks. This project is probably littered with obvious gotchas that someone who touches JS more than once in a blue moon would easily catch/fix. Feel free to fix them.
 
 #### Overview/Quick Start
 
-1. Start a static file webserver for the test page. `cd` into `Part 2/static` and do `python -m SimpleHTTPServer 8080` or whatever port you'd like to serve the page on (port 8081 is hardcoded for other parts of this demo, but the static service port is up to you).
+1. Start a static file webserver for the test page. `cd` into `static` and do `python -m SimpleHTTPServer 8080` or whatever port you'd like to serve the page on (port 8081 is hardcoded for other parts of this demo, but the static service port is up to you).
  	- For folks on Python 3, do `python -m http.server 8080`.
-2. Start the page-printing service. In another terminal/session, `cd` into `Part 2/print_webservice` directory and do `node print_webservice.js`. It should start listening on port 8081, and not output any errors.
+2. Start the page-printing service. In another terminal/session, do `node print_webservice/webservice.js`. It should start listening on port 8081, and not output any errors.
 3. In a browser, go to `http://localhost:8080` or whatever port you ran the Python static file server on. You should see a page with a "Get PDF" button, an image, and some red text.
 4. Click the "Get PDF" button. You should be handed a (ugly, badly formatted) PDF of the page in question.
 

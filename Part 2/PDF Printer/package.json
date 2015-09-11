@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "phridge": "latest",
+    "temp": "latest",
+    "when": "latest"
+  },
+  "description": "demo code for a simple PDF conversion webservice for athenahealth code fu",
+  "license": "MIT",
+  "name": "codefu_print_webservice",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AthenaCodeFu/nodejs-demo.git"
+  },
+  "version": "0.0.1"
+}
