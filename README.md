@@ -16,7 +16,7 @@ Part 2 was given on 03-09-2015, and covered webservice architecture in general, 
 
 Demo materials (along with a very large writeup on the PDF conversion service and its raison d'être) are in the `Part 2` folder.
 
-The other materials referred to in the presentation (which is in `Part 2\Presentation.pptx`) are:
+The other materials referred to in the presentation (which is in `Part 2/Presentation.pptx`) are:
 
 - [Yegge's Platforms Rant](https://plus.google.com/+RipRowan/posts/eVeouesvaVX) (which everyone and their dog has read by now).
 - [Your Server as a Function](http://monkey.org/~marius/funsrv.pdf).
